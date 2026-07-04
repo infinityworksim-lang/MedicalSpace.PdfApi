@@ -7,7 +7,7 @@
   </PropertyGroup>
 
 <ItemGroup>
-  <Content Include="Fonts\*.otf">
+  <Content Include="Fonts\*.ttf">
     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
   </Content>
 </ItemGroup>
