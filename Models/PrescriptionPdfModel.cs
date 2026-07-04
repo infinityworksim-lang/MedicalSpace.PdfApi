@@ -1,4 +1,4 @@
-﻿namespace MedicalSpace.PdfApi.Models
+namespace MedicalSpace.PdfApi.Models
 {
     public class PrescriptionPdfModel
     {
