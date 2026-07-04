@@ -8,8 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 QuestPDF.Settings.License = LicenseType.Community;
 
-FontManager.RegisterFont(File.OpenRead("Fonts/CairoOblique-8OyDD.otf"));
-FontManager.RegisterFont(File.OpenRead("Fonts/CairoRegular-YqG9j.otf"));
 FontManager.RegisterFont(File.OpenRead("Fonts/Cairo-Bold.ttf"));
 FontManager.RegisterFont(File.OpenRead("Fonts/Cairo-Regular.ttf"));
 
