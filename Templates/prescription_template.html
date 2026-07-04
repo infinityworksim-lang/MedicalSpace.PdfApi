@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <style>
+
+        body {
+            font-family: Arial,Helvetica,sans-serif;
+            margin: 40px;
+            color: #222;
+            font-size: 15px;
+        }
+
+        .header {
+            display: flex;
+            border-bottom: 3px solid #1976D2;
+            padding-bottom: 15px;
+        }
+
+        .logo {
+            width: 90px;
+            height: 90px;
+            margin-right: 20px;
+            object-fit: contain;
+        }
+
+        .info {
+            flex: 1;
+        }
+
+            .info h2 {
+                margin: 0;
+                color: #1976D2;
+            }
+
+            .info p {
+                margin: 4px 0;
+            }
+
+        .card {
+            margin-top: 20px;
+            border: 1px solid #DDD;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .patientTable {
+            width: 100%;
+        }
+
+            .patientTable td {
+                padding: 6px;
+            }
+
+        .rx {
+            margin-top: 25px;
+        }
+
+        .rxTitle {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        .drugs {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .drugs th {
+                background: #1976D2;
+                color: white;
+                padding: 8px;
+            }
+
+            .drugs td {
+                border: 1px solid #DDD;
+                padding: 8px;
+            }
+
+        .section {
+            margin-top: 25px;
+        }
+
+        .footer {
+            margin-top: 70px;
+            text-align: right;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="header">
+
+        <img class="logo"
+             src="data:image/png;base64,{{Logo}}" />
+
+        <div class="info">
+
+            <h2>{{DoctorName}}</h2>
+
+            <p>{{Specialty}}</p>
+
+            <p>{{ClinicName}}</p>
+
+            <p>{{Address}}</p>
+
+            <p>{{Phone}}</p>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <table class="patientTable">
+
+            <tr>
+
+                <td><b>Patient :</b> {{Patient}}</td>
+
+                <td><b>Date :</b> {{Date}}</td>
+
+            </tr>
+
+            <tr>
+
+                <td><b>Age :</b> {{Age}}</td>
+
+                <td><b>Gender :</b> {{Gender}}</td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+    <div class="rx">
+
+        <div class="rxTitle">
+
+            ? Prescription
+
+        </div>
+
+        <table class="drugs">
+
+            <tr>
+
+                <th>#</th>
+
+                <th>Drug</th>
+
+                <th>Dose</th>
+
+                <th>Frequency</th>
+
+                <th>Duration</th>
+
+                <th>Notes</th>
+
+            </tr>
+
+            {{Drugs}}
+
+        </table>
+
+    </div>
+
+    <div class="section">
+
+        <h3>Diagnosis</h3>
+
+        <p>{{Diagnosis}}</p>
+
+    </div>
+
+    <div class="section">
+
+        <h3>Advice</h3>
+
+        <p>{{Advice}}</p>
+
+    </div>
+
+    <div class="footer">
+
+        Dr. {{DoctorName}}
+
+    </div>
+
+</body>
+
+</html>
