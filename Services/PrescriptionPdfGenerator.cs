@@ -1,3 +1,7 @@
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 using MedicalSpace.PdfApi.Models;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -6,26 +10,36 @@ namespace MedicalSpace.PdfApi.Services
 {
     public class PrescriptionPdfGenerator
     {
-        public byte[] GeneratePdf(PrescriptionPdfModel model)
+        private static readonly HttpClient Http = new()
         {
+            Timeout = TimeSpan.FromSeconds(20)
+        };
+
+        private const int MaxLogoBytes = 5 * 1024 * 1024;
+
+        public async Task<byte[]> GeneratePdfAsync(PrescriptionPdfModel model)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+
+            // Download the logo before QuestPDF lays out the document.
+            // ClinicLogoPath must be an HTTPS URL from Supabase Storage.
+            byte[]? logoBytes = await DownloadClinicLogoAsync(model.ClinicLogoPath);
+
             using var stream = new MemoryStream();
 
             Document.Create(container =>
             {
                 container.Page(page =>
                 {
-                    page.Size(PageSizes.A4);
+                    page.Size(PageSizes.A5);
                     page.Margin(20);
 
-                    page.DefaultTextStyle(x => x
-                        .FontFamily("Cairo"));
+                    page.DefaultTextStyle(x => x.FontFamily("Cairo"));
 
-                    DrawHeader(page, model);
+                    DrawHeader(page, model, logoBytes);
 
                     page.Content().Column(column =>
                     {
-                        
-
                         column.Spacing(10);
 
                         DrawPatientInfo(column, model);
@@ -40,7 +54,65 @@ namespace MedicalSpace.PdfApi.Services
 
             return stream.ToArray();
         }
-        private void DrawHeader(PageDescriptor page, PrescriptionPdfModel model)
+
+        private static async Task<byte[]?> DownloadClinicLogoAsync(string? logoUrl)
+        {
+            if (string.IsNullOrWhiteSpace(logoUrl))
+                return null;
+
+            if (!Uri.TryCreate(logoUrl, UriKind.Absolute, out var uri) ||
+                uri.Scheme != Uri.UriSchemeHttps ||
+                !(uri.Host.Equals("supabase.co", StringComparison.OrdinalIgnoreCase) ||
+                  uri.Host.EndsWith(".supabase.co", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(
+                    "ClinicLogoPath must be a valid HTTPS URL from Supabase Storage.");
+            }
+
+            using var response = await Http.GetAsync(
+                uri,
+                HttpCompletionOption.ResponseHeadersRead);
+
+            response.EnsureSuccessStatusCode();
+
+            var mediaType = response.Content.Headers.ContentType?.MediaType;
+            if (mediaType is null ||
+                !mediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"The clinic logo URL did not return an image. Content-Type: {mediaType ?? "(missing)"}");
+            }
+
+            if (response.Content.Headers.ContentLength is long contentLength &&
+                contentLength > MaxLogoBytes)
+            {
+                throw new InvalidOperationException(
+                    "The clinic logo image must not exceed 5 MB.");
+            }
+
+            await using var input = await response.Content.ReadAsStreamAsync();
+            using var output = new MemoryStream();
+            var buffer = new byte[81920];
+            int bytesRead;
+
+            while ((bytesRead = await input.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0)
+            {
+                if (output.Length + bytesRead > MaxLogoBytes)
+                {
+                    throw new InvalidOperationException(
+                        "The clinic logo image must not exceed 5 MB.");
+                }
+
+                await output.WriteAsync(buffer.AsMemory(0, bytesRead));
+            }
+
+            return output.ToArray();
+        }
+
+        private void DrawHeader(
+            PageDescriptor page,
+            PrescriptionPdfModel model,
+            byte[]? logoBytes)
         {
             page.Header().Column(header =>
             {
@@ -99,10 +171,9 @@ namespace MedicalSpace.PdfApi.Services
                         .AlignMiddle()
                         .Element(container =>
                         {
-                            if (!string.IsNullOrWhiteSpace(model.ClinicLogoPath)
-                                && File.Exists(model.ClinicLogoPath))
+                            if (logoBytes is { Length: > 0 })
                             {
-                                container.Image(model.ClinicLogoPath);
+                                container.Image(logoBytes).FitArea();
                             }
                         });
                 });
