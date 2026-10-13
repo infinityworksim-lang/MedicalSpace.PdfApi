@@ -22,11 +22,11 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.MapPost("/api/prescription", (PrescriptionPdfModel model, PrescriptionPdfGenerator generator) =>
+app.MapPost("/api/prescription", async (PrescriptionPdfModel model, PrescriptionPdfGenerator generator) =>
 {
 	try
 	{
-        var pdf = generator.GeneratePdf(model);
+        var pdf = await generator.GeneratePdfAsync(model);
 
         return Results.File(pdf, "application/pdf", "Prescription.pdf");
     }
