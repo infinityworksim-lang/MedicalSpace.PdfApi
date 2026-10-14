@@ -150,7 +150,7 @@ namespace MedicalSpace.PdfApi.Services
                         });
                 });
 
-                header.Item().PaddingTop(12).LineHorizontal(2).LineColor(Colors.Blue.Medium);
+                header.Item().PaddingTop(6).LineHorizontal(2).LineColor(Colors.Blue.Medium);
             });
         }
         private void DrawPatientInfo(ColumnDescriptor column, PrescriptionPdfModel model)
