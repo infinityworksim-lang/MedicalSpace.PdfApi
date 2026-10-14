@@ -6,13 +6,11 @@ namespace MedicalSpace.PdfApi.Services
 {
     public class PrescriptionPdfGenerator
     {
-        private static readonly HttpClient Http = new()
-        {
-            Timeout = TimeSpan.FromSeconds(20)
-        };
+        private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
 
         private const int MaxLogoBytes = 5 * 1024 * 1024;
 
+        // Generate Pdf
         public async Task<byte[]> GeneratePdfAsync(PrescriptionPdfModel model)
         {
             ArgumentNullException.ThrowIfNull(model);
@@ -32,17 +30,18 @@ namespace MedicalSpace.PdfApi.Services
 
                     page.DefaultTextStyle(x => x.FontFamily("Cairo"));
 
+                    // Draw Header
                     DrawHeader(page, model, logoBytes);
 
+                    // Draw Content (Between Header and Footer)
                     page.Content().Column(column =>
                     {
-                        column.Spacing(10);
-
+                        column.Spacing(5);
                         DrawPatientInfo(column, model);
-
                         DrawPrescription(column, model);
                     });
 
+                    // Draw Footer
                     DrawFooter(page, model);
                 });
 
@@ -51,18 +50,17 @@ namespace MedicalSpace.PdfApi.Services
             return stream.ToArray();
         }
 
+        // Download Clinic Logo
         private static async Task<byte[]?> DownloadClinicLogoAsync(string? logoUrl)
         {
-            if (string.IsNullOrWhiteSpace(logoUrl))
-                return null;
-
+            if (string.IsNullOrWhiteSpace(logoUrl)) { return null; }
+               
             if (!Uri.TryCreate(logoUrl, UriKind.Absolute, out var uri) ||
                 uri.Scheme != Uri.UriSchemeHttps ||
                 !(uri.Host.Equals("supabase.co", StringComparison.OrdinalIgnoreCase) ||
                   uri.Host.EndsWith(".supabase.co", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException(
-                    "Clinic Logo Path must be a valid HTTPS URL from Supabase Storage.");
+                throw new InvalidOperationException("Clinic Logo Path must be a valid HTTPS URL from Supabase Storage.");
             }
 
             using var response = await Http.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
@@ -70,13 +68,10 @@ namespace MedicalSpace.PdfApi.Services
             response.EnsureSuccessStatusCode();
 
             var mediaType = response.Content.Headers.ContentType?.MediaType;
-            if (mediaType is null ||
-                !mediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            if (mediaType is null || !mediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException(
-                    $"The clinic logo URL did not return an image. Content-Type: {mediaType ?? "(missing)"}");
+                throw new InvalidOperationException($"The clinic logo URL did not return an image. Content-Type: {mediaType ?? "(missing)"}");
             }
-
             if (response.Content.Headers.ContentLength is long contentLength && contentLength > MaxLogoBytes)
             {
                 throw new InvalidOperationException("The clinic logo image must not exceed 5 MB.");
@@ -100,6 +95,7 @@ namespace MedicalSpace.PdfApi.Services
             return output.ToArray();
         }
 
+        // Draw Header
         private void DrawHeader(PageDescriptor page, PrescriptionPdfModel model, byte[]? logoBytes)
         {
             page.Header().Column(header =>
@@ -111,31 +107,31 @@ namespace MedicalSpace.PdfApi.Services
                     // =========================
                     row.RelativeItem().Column(info =>
                     {
-                        info.Spacing(1); // 3
+                        info.Spacing(0); // 3
 
                         // Doctor name
-                        info.Item().Text(model.DoctorName).FontSize(18).Bold();
+                        info.Item().Text(model.DoctorName).FontSize(18).LineHeight(0.8f).Bold();
 
                         // Doctor Specialty
-                        if (!string.IsNullOrWhiteSpace(model.Specialty)) { info.Item().Text(model.Specialty).FontSize(13).FontColor(Colors.Blue.Medium); }
+                        if (!string.IsNullOrWhiteSpace(model.Specialty)) { info.Item().Text(model.Specialty).FontSize(13).LineHeight(0.8f).FontColor(Colors.Blue.Medium); }
 
                         // Doctor Degree
-                        if (!string.IsNullOrWhiteSpace(model.DoctorDegree)) { info.Item().Text(model.DoctorDegree).FontSize(13).FontColor(Colors.Grey.Darken2); }
+                        if (!string.IsNullOrWhiteSpace(model.DoctorDegree)) { info.Item().Text(model.DoctorDegree).FontSize(13).LineHeight(0.8f).FontColor(Colors.Grey.Darken2); }
 
                         //// Clinic Name
-                        //if (!string.IsNullOrWhiteSpace(model.ClinicName)) { info.Item().Text(model.ClinicName).FontSize(13).Bold(); }
+                        //if (!string.IsNullOrWhiteSpace(model.ClinicName)) { info.Item().Text(model.ClinicName).FontSize(13) .LineHeight(0.8f).Bold(); }
 
                         // Clinic Address
-                        if (!string.IsNullOrWhiteSpace(model.Address)) { info.Item().Text(model.Address).FontSize(13); }
+                        if (!string.IsNullOrWhiteSpace(model.Address)) { info.Item().Text(model.Address).FontSize(13).LineHeight(0.8f); }
 
                         // Phone
-                        if (!string.IsNullOrWhiteSpace(model.Phone)) { info.Item().Text($"{model.Phone}").FontSize(13); }
+                        if (!string.IsNullOrWhiteSpace(model.Phone)) { info.Item().Text($"{model.Phone}").FontSize(13).LineHeight(0.8f); }
 
-                        // Email
-                        if (!string.IsNullOrWhiteSpace(model.ClinicEmail)) { info.Item().Text($"{model.ClinicEmail}").FontSize(13); }
+                        //// Email
+                        //if (!string.IsNullOrWhiteSpace(model.ClinicEmail)) { info.Item().Text($"{model.ClinicEmail}").FontSize(13); }
 
-                        // Website
-                        if (!string.IsNullOrWhiteSpace(model.ClinicWebsite)) { info.Item().Text(model.ClinicWebsite).FontSize(13); }       
+                        //// Website
+                        //if (!string.IsNullOrWhiteSpace(model.ClinicWebsite)) { info.Item().Text(model.ClinicWebsite).FontSize(13); }       
                     });
 
                     // =========================
@@ -150,19 +146,22 @@ namespace MedicalSpace.PdfApi.Services
                         });
                 });
 
+                // Line
                 header.Item().PaddingTop(6).LineHorizontal(2).LineColor(Colors.Blue.Medium);
             });
         }
+
+        // Draw Patient Info
         private void DrawPatientInfo(ColumnDescriptor column, PrescriptionPdfModel model)
         {
             column.Item()
-                .PaddingTop(15)
+                .PaddingTop(8)
                 .Border(1)
                 .BorderColor(Colors.Grey.Lighten2)
                 .Padding(12)
                 .Table(table =>
                 {
-                    // عمودان متساويان
+                    // عمودان بنسبة 1:2
                     table.ColumnsDefinition(columns =>
                     {
                         columns.RelativeColumn(2); // 2/3
@@ -174,7 +173,7 @@ namespace MedicalSpace.PdfApi.Services
                     {
                         cell.Padding(4).Row(row =>
                         {
-                            row.ConstantItem(100).Text("Patient Name:").FontSize(14).Bold();
+                            row.ConstantItem(95).Text("Patient Name").FontSize(14).Bold();
                             row.ConstantItem(10).Text(":").FontSize(12).AlignCenter().Bold();
                             row.RelativeItem().Text(model.PatientName ?? "").FontSize(14).Bold();
                         });
@@ -184,7 +183,7 @@ namespace MedicalSpace.PdfApi.Services
                     {
                         cell.Padding(4).Row(row =>
                         {
-                            row.ConstantItem(80).Text("Date:").FontSize(14).Bold();
+                            row.ConstantItem(75).Text("Date").FontSize(14).Bold();
                             row.ConstantItem(10).Text(":").FontSize(12).AlignCenter().Bold();
                             row.RelativeItem().Text(model.Date ?? "").FontSize(14).Bold();
                         });
@@ -195,7 +194,7 @@ namespace MedicalSpace.PdfApi.Services
                     {
                         cell.Padding(4).Row(row =>
                         {
-                            row.ConstantItem(100).Text("Age:").FontSize(14).Bold();
+                            row.ConstantItem(95).Text("Age").FontSize(14).Bold();
                             row.ConstantItem(10).Text(":").FontSize(12).AlignCenter().Bold();
                             row.RelativeItem().Text(model.Age.ToString()).FontSize(14).Bold();
                         });
@@ -205,23 +204,25 @@ namespace MedicalSpace.PdfApi.Services
                     {
                         cell.Padding(4).Row(row =>
                         {
-                            row.ConstantItem(80).Text("Gender:").FontSize(14).Bold();
+                            row.ConstantItem(75).Text("Gender").FontSize(14).Bold();
                             row.ConstantItem(10).Text(":").FontSize(12).AlignCenter().Bold();
                             row.RelativeItem().Text(model.Gender ?? "").FontSize(14).Bold();
                         });
                     });
                 });
         }
+
+        // Draw Prescription
         private void DrawPrescription(ColumnDescriptor column, PrescriptionPdfModel model)
         {
-            column.Item().PaddingTop(15);
+            column.Item().PaddingTop(8);
 
             column.Item()
                 .Text("℞ Prescription")
                 .FontSize(18)
                 .Bold();
 
-            column.Item().PaddingTop(10);
+            column.Item().PaddingTop(5);
 
             column.Item().Table(table =>
             {
@@ -321,7 +322,7 @@ namespace MedicalSpace.PdfApi.Services
             // Diagnosis
             if (!string.IsNullOrWhiteSpace(model.Diagnosis))
             {
-                column.Item().PaddingTop(18);
+                column.Item().PaddingTop(8);
 
                 column.Item()
                     .Text("Diagnosis")
@@ -331,7 +332,7 @@ namespace MedicalSpace.PdfApi.Services
                 column.Item()
                     .Border(1)
                     .BorderColor(Colors.Grey.Lighten2)
-                    .Padding(10)
+                    .Padding(7)
                     .Text(model.Diagnosis)
                     .FontSize(13).Bold();
             }
@@ -339,7 +340,7 @@ namespace MedicalSpace.PdfApi.Services
             // Advice
             if (!string.IsNullOrWhiteSpace(model.Advice))
             {
-                column.Item().PaddingTop(15);
+                column.Item().PaddingTop(8);
 
                 column.Item()
                     .Text("Advice")
@@ -349,13 +350,13 @@ namespace MedicalSpace.PdfApi.Services
                 column.Item()
                     .Border(1)
                     .BorderColor(Colors.Grey.Lighten2)
-                    .Padding(10)
+                    .Padding(7)
                     .Text(model.Advice)
                     .FontSize(13).Bold();
             }
         }
 
-        // DrawFooter
+        // Draw Footer
         private void DrawFooter(PageDescriptor page, PrescriptionPdfModel model)
         {
             page.Footer().AlignRight().Text(text =>
