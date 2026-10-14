@@ -165,8 +165,8 @@ namespace MedicalSpace.PdfApi.Services
                     // عمودان متساويان
                     table.ColumnsDefinition(columns =>
                     {
-                        columns.RelativeColumn();
-                        columns.RelativeColumn();
+                        columns.RelativeColumn(2); // 2/3
+                        columns.RelativeColumn(1); // 1/3
                     });
 
                     // الصف الأول: اليسار = Patient Name, اليمين = Date
