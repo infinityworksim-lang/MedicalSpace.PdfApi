@@ -111,7 +111,7 @@ namespace MedicalSpace.PdfApi.Services
                     // =========================
                     row.RelativeItem().Column(info =>
                     {
-                        info.Spacing(2); // 3
+                        info.Spacing(1); // 3
 
                         // Doctor name
                         info.Item().Text(model.DoctorName).FontSize(18).Bold();
