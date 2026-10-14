@@ -110,22 +110,22 @@ namespace MedicalSpace.PdfApi.Services
                         info.Spacing(0); // 3
 
                         // Doctor name
-                        info.Item().Text(model.DoctorName).FontSize(18).LineHeight(0.8f).Bold();
+                        info.Item().Text(model.DoctorName).FontSize(18)/*.LineHeight(1f)*/.Bold();
 
                         // Doctor Specialty
-                        if (!string.IsNullOrWhiteSpace(model.Specialty)) { info.Item().Text(model.Specialty).FontSize(13).LineHeight(0.8f).FontColor(Colors.Blue.Medium); }
+                        if (!string.IsNullOrWhiteSpace(model.Specialty)) { info.Item().Text(model.Specialty).FontSize(13)/*.LineHeight(1f)*/.FontColor(Colors.Blue.Medium); }
 
                         // Doctor Degree
-                        if (!string.IsNullOrWhiteSpace(model.DoctorDegree)) { info.Item().Text(model.DoctorDegree).FontSize(13).LineHeight(0.8f).FontColor(Colors.Grey.Darken2); }
+                        if (!string.IsNullOrWhiteSpace(model.DoctorDegree)) { info.Item().Text(model.DoctorDegree).FontSize(13)/*.LineHeight(0.8f)*/.FontColor(Colors.Grey.Darken2); }
 
                         //// Clinic Name
                         //if (!string.IsNullOrWhiteSpace(model.ClinicName)) { info.Item().Text(model.ClinicName).FontSize(13) .LineHeight(0.8f).Bold(); }
 
                         // Clinic Address
-                        if (!string.IsNullOrWhiteSpace(model.Address)) { info.Item().Text(model.Address).FontSize(13).LineHeight(0.8f); }
+                        if (!string.IsNullOrWhiteSpace(model.Address)) { info.Item().Text(model.Address).FontSize(13)/*.LineHeight(0.8f)*/; }
 
                         // Phone
-                        if (!string.IsNullOrWhiteSpace(model.Phone)) { info.Item().Text($"{model.Phone}").FontSize(13).LineHeight(0.8f); }
+                        if (!string.IsNullOrWhiteSpace(model.Phone)) { info.Item().Text($"{model.Phone}").FontSize(13)/*.LineHeight(0.8f)*/; }
 
                         //// Email
                         //if (!string.IsNullOrWhiteSpace(model.ClinicEmail)) { info.Item().Text($"{model.ClinicEmail}").FontSize(13); }
@@ -154,11 +154,7 @@ namespace MedicalSpace.PdfApi.Services
         // Draw Patient Info
         private void DrawPatientInfo(ColumnDescriptor column, PrescriptionPdfModel model)
         {
-            column.Item()
-                .PaddingTop(8)
-                .Border(1)
-                .BorderColor(Colors.Grey.Lighten2)
-                .Padding(12)
+            column.Item().PaddingTop(8).Border(1).BorderColor(Colors.Grey.Lighten2).Padding(12)
                 .Table(table =>
                 {
                     // عمودان بنسبة 1:2
