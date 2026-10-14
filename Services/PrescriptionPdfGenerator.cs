@@ -111,40 +111,37 @@ namespace MedicalSpace.PdfApi.Services
                     // =========================
                     row.RelativeItem().Column(info =>
                     {
-                        info.Spacing(3);
-                        info.Item()
-                            .Text(model.DoctorName)
-                            .FontSize(18)
-                            .Bold();
+                        info.Spacing(2); // 3
 
-                        if (!string.IsNullOrWhiteSpace(model.DoctorDegree))
-                        {
-                            info.Item()
-                                .Text(model.DoctorDegree)
-                                .FontSize(13)
-                                .FontColor(Colors.Grey.Darken2);
-                        }
+                        // Doctor name
+                        info.Item().Text(model.DoctorName).FontSize(18).Bold();
 
-                        if (!string.IsNullOrWhiteSpace(model.Specialty))
-                        {
-                            info.Item()
-                                .Text(model.Specialty)
-                                .FontSize(13)
-                                .FontColor(Colors.Blue.Medium);
-                        }
+                        // Doctor Specialty
+                        if (!string.IsNullOrWhiteSpace(model.Specialty)) { info.Item().Text(model.Specialty).FontSize(13).FontColor(Colors.Blue.Medium); }
 
-                        if (!string.IsNullOrWhiteSpace(model.ClinicName)) { info.Item().Text(model.ClinicName).Bold(); }
-                        if (!string.IsNullOrWhiteSpace(model.Address)) { info.Item().Text(model.Address); }                        
-                        if (!string.IsNullOrWhiteSpace(model.Phone)) { info.Item().Text($"{model.Phone}"); }
-                        if (!string.IsNullOrWhiteSpace(model.ClinicEmail)) { info.Item().Text($"{model.ClinicEmail}"); }
-                        if (!string.IsNullOrWhiteSpace(model.ClinicWebsite)) { info.Item().Text(model.ClinicWebsite); }       
+                        // Doctor Degree
+                        if (!string.IsNullOrWhiteSpace(model.DoctorDegree)) { info.Item().Text(model.DoctorDegree).FontSize(13).FontColor(Colors.Grey.Darken2); }
+
+                        //// Clinic Name
+                        //if (!string.IsNullOrWhiteSpace(model.ClinicName)) { info.Item().Text(model.ClinicName).FontSize(13).Bold(); }
+
+                        // Clinic Address
+                        if (!string.IsNullOrWhiteSpace(model.Address)) { info.Item().Text(model.Address).FontSize(13); }
+
+                        // Phone
+                        if (!string.IsNullOrWhiteSpace(model.Phone)) { info.Item().Text($"{model.Phone}").FontSize(13); }
+
+                        // Email
+                        if (!string.IsNullOrWhiteSpace(model.ClinicEmail)) { info.Item().Text($"{model.ClinicEmail}").FontSize(13); }
+
+                        // Website
+                        if (!string.IsNullOrWhiteSpace(model.ClinicWebsite)) { info.Item().Text(model.ClinicWebsite).FontSize(13); }       
                     });
 
                     // =========================
                     // Logo (Right)
                     // =========================
-                    row.ConstantItem(90).Height(90).AlignRight().AlignMiddle()
-                        .Element(container =>
+                    row.ConstantItem(90).Height(90).AlignRight().AlignMiddle().Element(container =>
                         {
                             if (logoBytes is { Length: > 0 })
                             {
